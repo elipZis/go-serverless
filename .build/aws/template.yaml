@@ -1,0 +1,230 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  elipzis-go-serverless
+
+  Go Serverless! Example App by elipZis
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+
+  # RDS
+  RDSInstanceClass:
+    Default: db.t2.micro
+    Description: DB instance class
+    Type: String
+  RDSAllocatedStorage:
+    Default: '10'
+    Description: The size of the database (GiB)
+    Type: Number
+    MinValue: '5'
+    MaxValue: '1024'
+  RDSUsername:
+    Default: goserverless
+    Description: Username for MySQL database access
+    Type: String
+    MinLength: '5'
+  RDSPassword:
+    Default: goserverless
+    Description: Password MySQL database access
+    Type: String
+    MinLength: '5'
+    MaxLength: '64'
+  JwtSecret:
+    Default: jwtsecret
+    Description: The JWT Secret to use
+    Type: String
+
+Conditions:
+  CreateProdResources: !Equals [ !Ref Environment, "prod" ]
+  CreateDevResources: !Equals [ !Ref Environment, "dev" ]
+
+Resources:
+  # API
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../cmd/api/
+      Handler: api
+      Runtime: go1.x
+      Architectures:
+        - arm64
+      MemorySize: !If [ CreateProdResources, 256, 128 ]
+      Timeout: !If [ CreateProdResources, 60, 30 ]
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
+        - AWSLambdaSQSQueueExecutionRole
+        - Statement:
+            - Sid: SendToSQS
+              Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource:
+                - Fn::GetAtt: [ Queue, Arn ]
+            - Sid: RDSPolicy
+              Effect: Allow
+              Action:
+                - rds-db:connect
+              Resource: '*'
+      Events:
+        GetResource:
+          Type: Api
+          Properties:
+            Path: /api/{proxy+}
+            Method: any
+            RestApiId: !Ref ApiDeployment
+      Environment:
+        Variables:
+          ENVIRONMENT: !Sub "${Environment}"
+          SERVER_ENV: AWS
+          RDS_HOST: !GetAtt RDS.Endpoint.Address
+          RDS_PORT: !GetAtt RDS.Endpoint.Port
+          RDS_NAME: "goserverless"
+          RDS_USER:
+            Ref: RDSUsername
+          RDS_PASS:
+            Ref: RDSPassword
+          QUEUE_URL:
+            Ref: Queue
+          JWT_SECRET:
+            Ref: JwtSecret
+
+  ApiDeployment:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Environment
+      MethodSettings:
+        - LoggingLevel: ERROR
+          MetricsEnabled: true
+          ResourcePath: '/*'
+          HttpMethod: '*'
+
+  # API
+  WebFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../cmd/web/
+      Handler: web
+      Runtime: go1.x
+      Architectures:
+        - arm64
+      MemorySize: !If [ CreateProdResources, 256, 128 ]
+      Timeout: !If [ CreateProdResources, 60, 30 ]
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
+        - Statement:
+            - Sid: RDSPolicy
+              Effect: Allow
+              Action:
+                - rds-db:connect
+              Resource: '*'
+      Events:
+        GetResource:
+          Type: Api
+          Properties:
+            Path: /web/{proxy+}
+            Method: any
+            RestApiId: !Ref ApiDeployment
+      Environment:
+        Variables:
+          ENVIRONMENT: !Sub "${Environment}"
+          SERVER_ENV: AWS
+          RDS_HOST: !GetAtt RDS.Endpoint.Address
+          RDS_PORT: !GetAtt RDS.Endpoint.Port
+          RDS_NAME: "goserverless"
+          RDS_USER:
+            Ref: RDSUsername
+          RDS_PASS:
+            Ref: RDSPassword
+          JWT_SECRET:
+            Ref: JwtSecret
+
+  # Queue Handler
+  QueueFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../cmd/queue/
+      Handler: queue
+      Runtime: go1.x
+      Architectures:
+        - arm64
+      MemorySize: !If [ CreateProdResources, 256, 128 ]
+      Timeout: !If [CreateProdResources, 60, 30]
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
+        - AWSLambdaSQSQueueExecutionRole
+        - Statement:
+            - Sid: RDSPolicy
+              Effect: Allow
+              Action:
+                - rds-db:connect
+              Resource: '*'
+      Events:
+        QueueRequest:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt Queue.Arn
+            BatchSize: 1
+      Environment:
+        Variables:
+          SERVER_ENV: AWS
+          RDS_HOST: !GetAtt RDS.Endpoint.Address
+          RDS_PORT: !GetAtt RDS.Endpoint.Port
+          RDS_NAME: "goserverless"
+          RDS_USER:
+            Ref: RDSUsername
+          RDS_PASS:
+            Ref: RDSPassword
+          QUEUE_URL:
+            Ref: Queue
+      Layers:
+        - !Ref Chromium
+
+  # Layer
+  ChromiumLayer:
+    Type: AWS::Serverless::LayerVersion
+    Name: !Sub "chromium-${Environment}"
+    Description: Headless Chromium
+    Properties:
+      ContentUri: layer/chrome-aws-lambda/ # Binaries from https://github.com/alixaxel/chrome-aws-lambda
+
+  # RDS Database
+  RDS:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBInstanceIdentifier: !Sub "goserverless-${Environment}"
+      DBName: "goserverless"
+      DBInstanceClass: !Ref RDSInstanceClass
+      AllocatedStorage: !Ref RDSAllocatedStorage
+      Engine: "postgres"
+      EngineVersion: "12"
+      MasterUsername: !Ref RDSUsername
+      MasterUserPassword: !Ref RDSPassword
+
+  # SQS Queue
+  Queue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "goserverless-queue-${Environment}"
+      VisibilityTimeout: !If [CreateProdResources, 60, 30]
+
+Outputs:
+  Api:
+    Description: "API Gateway endpoint URL for the environment"
+    Value: !Sub "https://${ApiDeployment}.execute-api.${AWS::Region}.amazonaws.com/${Environment}"
+    Export:
+      Name: !Sub "Api-${Environment}"
+  ApiFunction:
+    Description: "Lambda Function ARN"
+    Value: !GetAtt ApiFunction.Arn
+  ApiFunctionIamRole:
+    Description: "Implicit IAM Role created for the API function"
+    Value: !GetAtt ApiFunctionRole.Arn
