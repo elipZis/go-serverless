@@ -42,3 +42,13 @@ The main tech stack contains of
 * [Fiber](https://github.com/gofiber/fiber)
 * [AWS Lambda](https://aws.amazon.com/lambda/)
 * [Chromium](https://github.com/alixaxel/chrome-aws-lambda)
+
+## Credits
+
+- [elipZis GmbH](https://elipZis.com)
+- [NeA](https://github.com/nea)
+- [All Contributors](https://github.com/elipZis/go-serverless/contributors)
+
+## License
+
+The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
