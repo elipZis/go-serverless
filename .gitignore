@@ -1,0 +1,35 @@
+# golang output binary directory
+bin
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.zip
+*.7z
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Serverless directories
+.serverless
+serverless_sdk
+
+# Aws directories
+.aws-sam
+
+# Dependency directories
+vendor
+node_modules/
+path
+
+#
+.env
+
+# Other
+.idea

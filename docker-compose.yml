@@ -1,0 +1,35 @@
+version: '3.7'
+
+services:
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "4566:4566"
+      - "4571:4571"
+      - "8090:8090"
+    environment:
+      - SERVICES=${SERVICES-sqs}
+      - DEBUG=1
+      - PORT_WEB_UI=8090
+      - DATA_DIR=${DATA_DIR- }
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-local}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-local}
+      - AWS_DEFAULT_REGION=${AWS_REGION:-eu-central-1}
+      - EAGER_SERVICE_LOADING=1
+    networks:
+      - "local"
+
+  timescaledb-postgis:
+    image: timescale/timescaledb-postgis:latest-pg12
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - /var/lib/timescaledb-postgis/data
+    networks:
+      - "local"
+
+networks:
+  local:
+    driver: "bridge"
