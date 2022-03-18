@@ -2,6 +2,8 @@
 
 An accompanying example project to the [Conf42: Golang 2022 presentation](https://www.conf42.com/Golang_2022_Savas_Ziplies_serverless) by Savas Ziplies.
 
+A scaffold o deploy Golang framework-driven Serverless functions to AWS.
+
 ## Pre-requisites
 
 * [AWS CLI](https://aws.amazon.com/cli/) already configured with Administrator permission
