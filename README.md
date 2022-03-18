@@ -4,7 +4,7 @@ An accompanying example project to the [Conf42: Golang 2022 presentation](https:
 
 ## Pre-requisites
 
-* AWS CLI already configured with Administrator permission
+* [AWS CLI](https://aws.amazon.com/cli/) already configured with Administrator permission
 * [Docker installed](https://docs.docker.com/get-docker/)
 * [Golang](https://golang.org)
 * [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
