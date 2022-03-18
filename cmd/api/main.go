@@ -23,7 +23,7 @@ func init() {
 	r = router.NewRouter()
 	r.Register(r.App.Group(""))
 
-	// Fo AWS Lambda we need a wrapper to proxy the requests
+	// For AWS Lambda we need a wrapper to proxy the requests
 	if os.Getenv("SERVER_ENV") == "AWS" {
 		fiberLambda = fiberAdapter.New(r.App)
 	}

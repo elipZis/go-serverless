@@ -198,7 +198,7 @@ Resources:
 
   # RDS Database
   RDS:
-    Type: 'AWS::RDS::DBInstance'
+    Type: AWS::RDS::DBInstance
     Properties:
       DBInstanceIdentifier: !Sub "goserverless-${Environment}"
       DBName: "goserverless"
