@@ -73,22 +73,15 @@ func main() {
 						msgAttributes = make(map[string]events.SQSMessageAttribute, len(message.MessageAttributes))
 						for k, v := range message.MessageAttributes {
 							msgAttributes[k] = events.SQSMessageAttribute{
-								StringValue: v.StringValue,
-								BinaryValue: v.BinaryValue,
-								//StringListValues: v.StringListValues,
+								StringValue:      v.StringValue,
+								BinaryValue:      v.BinaryValue,
 								BinaryListValues: v.BinaryListValues,
 								DataType:         *v.DataType,
 							}
 						}
 
-						//_, err = DO SOMETHING(&events.SQSMessage{
-						//	MessageId:              *message.MessageId,
-						//	ReceiptHandle:          *message.ReceiptHandle,
-						//	Body:                   *message.Body,
-						//	Md5OfBody:              *message.MD5OfBody,
-						//	Md5OfMessageAttributes: *message.MD5OfMessageAttributes,
-						//	MessageAttributes:      msgAttributes,
-						//})
+						// DO SOMETHING
+						log.Println(message)
 
 						// Clear the message from the Queue
 						if err == nil {
