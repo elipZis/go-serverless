@@ -6,7 +6,7 @@ A scaffold to deploy Golang framework-driven Serverless functions to AWS.
 
 ## Pre-requisites
 
-* [AWS CLI](https://aws.amazon.com/cli/) already configured with Administrator permission
+* [AWS CLI](https://aws.amazon.com/cli/) already configured with required permissions
 * [Docker installed](https://docs.docker.com/get-docker/)
 * [Golang](https://golang.org)
 * [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
@@ -18,19 +18,19 @@ To run/test locally:
 * Run `docker-compose up -d timescaledb-postgis localstack`
 * (Optional) Create a local queue in localstack for testing: `aws --endpoint-url=http://localhost:4566 sqs create-queue --queue-name goserverless-queue-dev`
 * Copy `.env.example` to `.env`
-* Run the single commands
+* Run the single commands or deploy
 
-### Run the API
+### Deploy
 
-`go build github.com/elipzis/go-serverless/api`
+* `cd .build/aws`
+* `sam build`
+* `sam deploy --guided` for a first time deployment
 
-### Run the Queue
+### Running
 
-`go build github.com/elipzis/go-serverless/queue`
-
-### Run the Web
-
-`go build github.com/elipzis/go-serverless/web`
+* The "api" cmd: `go build github.com/elipzis/go-serverless/api`
+* The "queue" cmd: `go build github.com/elipzis/go-serverless/queue`
+* The "web" cmd: `go build github.com/elipzis/go-serverless/web`
 
 ## Tech Stack
 
