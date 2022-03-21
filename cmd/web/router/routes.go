@@ -10,6 +10,9 @@ func (this *Router) Register(rootGroup fiber.Router) {
 	// Handler
 	controller := handler.NewHandler(this.App)
 
+	// Deployed subgroup
+	v1 := rootGroup.Group("/web") // /web
+
 	// Handlers
-	rootGroup.Get("/", controller.Template) // /
+	v1.Get("/go", controller.Template) // /go
 }

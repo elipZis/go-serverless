@@ -21,7 +21,7 @@ type Router struct {
 func NewRouter() (this *Router) {
 	this = new(Router)
 
-	//engine := html.New("../view", ".html")
+	// Create a template filesystem of compiled templates
 	engine := html.NewFileSystem(rice.MustFindBox("../view").HTTPBox(), ".html")
 	this.App = fiber.New(fiber.Config{
 		AppName: util.GetEnvOrDefault("APP_NAME", "Go Serverless!"),

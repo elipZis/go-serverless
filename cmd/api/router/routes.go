@@ -11,8 +11,11 @@ func (this *Router) Register(rootGroup fiber.Router) {
 	// Handler
 	controller := handler.NewHandler(this.App)
 
+	// Deployed subgroup
+	v1 := rootGroup.Group("/api") // /api
+
 	// Handlers
-	rootGroup.Get("/hello/:name?", controller.HelloWorld)                                // /hello/{name?}
-	rootGroup.Get("/secret/hello/:name?", middleware.Protected(), controller.HelloWorld) // /secret/hello/{name?}
-	rootGroup.Get("/queue/:name?", controller.QueueHelloWorld)                           // /queue/{name?}
+	v1.Get("/hello/:name?", controller.HelloWorld)                                // /hello/{name?}
+	v1.Get("/secret/hello/:name?", middleware.Protected(), controller.HelloWorld) // /secret/hello/{name?}
+	v1.Get("/queue/:name?", controller.QueueHelloWorld)                           // /queue/{name?}
 }

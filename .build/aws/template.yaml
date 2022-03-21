@@ -52,8 +52,6 @@ Resources:
       CodeUri: ../../cmd/api/
       Handler: api
       Runtime: go1.x
-      Architectures:
-        - arm64
       MemorySize: !If [ CreateProdResources, 256, 128 ]
       Timeout: !If [ CreateProdResources, 60, 30 ]
       Policies:
@@ -105,15 +103,33 @@ Resources:
           ResourcePath: '/*'
           HttpMethod: '*'
 
-  # API
+  ApiGwAccountConfig:
+    Type: AWS::ApiGateway::Account
+    Properties:
+      CloudWatchRoleArn: !GetAtt 'ApiGatewayLoggingRole.Arn'
+
+  ApiGatewayLoggingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - 'apigateway.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Path: '/'
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs'
+
+  # Web
   WebFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ../../cmd/web/
       Handler: web
       Runtime: go1.x
-      Architectures:
-        - arm64
       MemorySize: !If [ CreateProdResources, 256, 128 ]
       Timeout: !If [ CreateProdResources, 60, 30 ]
       Policies:
@@ -153,8 +169,6 @@ Resources:
       CodeUri: ../../cmd/queue/
       Handler: queue
       Runtime: go1.x
-      Architectures:
-        - arm64
       MemorySize: !If [ CreateProdResources, 256, 128 ]
       Timeout: !If [CreateProdResources, 60, 30]
       Policies:
@@ -186,7 +200,7 @@ Resources:
           QUEUE_URL:
             Ref: Queue
       Layers:
-        - !Ref Chromium
+        - !Ref ChromiumLayer
 
   # Layer
   ChromiumLayer:
