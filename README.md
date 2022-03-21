@@ -51,6 +51,13 @@ The main tech stack contains of
 - [NeA](https://github.com/nea)
 - [All Contributors](https://github.com/elipZis/go-serverless/contributors)
 
+## Thanks
+
+Thanks to Conf42 for having me :)
+- Web - [Conf42](https://www.conf42.com/)
+-	LinkedIn - [@conf42](https://www.linkedin.com/company/conf42)
+-	Twitter - [@conf42com](https://twitter.com/conf42com)
+
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
